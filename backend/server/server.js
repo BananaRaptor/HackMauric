@@ -7,7 +7,7 @@ const updateFlow = require('./controllers/updateFlow');
 const getFlow = require('./controllers/getFlow');
 const updateWorkingState = require('./controllers/updateWorkingState');
 
-var minutes = 0.5, the_interval = minutes * 60 * 1000;
+var minutes = 0.2, the_interval = minutes * 60 * 1000;
 var pumps = [];
 var lastPumps = [];
 
@@ -33,27 +33,30 @@ function updatePumps(){
 }
 
 setInterval(function() {
-	var length = pumps.length;
-	if(length < 0){
+	var length = lastPumps.length;
+	if(length <= 0){
 		updatePumps();
+		return;
 	}
 	for (var i = 0; i<length; ++i){
-		var index = getIndex(pumps[i].mac);
+		var index = getIndex(lastPumps[i].mac);
+		console.log("index :" + index);
 		if (index < 0){
 			const query = {
 				name: "update working state false",
-				text: `UPDATE pump SET workingstate = FALSE WHERE pumpid = $1`,
+				text: `UPDATE pump AS p SET flow = 0 WHERE p.pumpid = $1`,
 				values: [
-					pumps[index].mac
+					lastPumps[i].mac
 				]
 			};
-			db.query(query, (err, data) => {
+			client.query(query, (err, data) => {
 				if(err) {
 					console.log(err.stack);
 				}
 			});
 		}		
 	}
+	updatePumps();
 }, the_interval);
 
 //get////////////////////////////////////////////////////////////////////////////////////
@@ -75,7 +78,7 @@ app.post('/flow', (req, res) => {
 	var index = pumps.findIndex(function(item, i){
 		return item.mac === req.body.mac
 	});
-	if(index === -1){
+	if(index == -1){
 		pumps.push({mac: req.body.mac, flow: req.body.flow});
 		updateWorkingState.handleWorkingStateUpdate(req, res, client);
 	}else{
