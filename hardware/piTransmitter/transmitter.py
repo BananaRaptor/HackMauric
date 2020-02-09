@@ -5,9 +5,7 @@ import uuid
 
 serialArduino = serial.Serial('/dev/ttyACM0', 9600)
 URL = "http://18.222.169.179:3000/flow"
-mac = (['{:02x}'.format((uuid.getnode() >> ele) & 0xff)
-        for ele in range(0, 8 * 6, 8)][::-1])
-mac = str(mac)
+mac = (hex(uuid.getnode()))
 print(mac)
 
 a = 0
