@@ -11,9 +11,7 @@ const handleGetFlow = (req, res, db) => {
         if(err) {
             console.log(err.stack);
         }else{
-            console.log(data.rows[0]);
             res.send(data.rows[0]);
-            console.log("sent data");
         }
     });
 }

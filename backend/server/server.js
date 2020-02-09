@@ -72,7 +72,6 @@ app.post("/addpump", (req, res) => {
 });
 
 app.post('/flow', (req, res) => {
-	console.log(req.body);
 	var index = pumps.findIndex(function(item, i){
 		return item.mac === req.body.mac
 	});

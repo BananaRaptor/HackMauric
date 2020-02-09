@@ -1,5 +1,4 @@
 const handleNewPump = (req, res, db) => {
-	console.log(req.body);
 	saveNewPump(req.body.mac, -1, false, db);
 };
 
