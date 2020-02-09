@@ -1,9 +1,17 @@
 import UIKit
 import UserNotifications
 
+struct Test : Codable {
+   let workingstate = true
+    let flow = 0
+}
 
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    
+    
+    
+    @IBOutlet weak var gradient: UIView!
     
     
     
@@ -19,43 +27,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         
         
-            let myUrl = URL(string: "http://18.222.169.179:3000/addpump");
-             
-             var request = URLRequest(url:myUrl!)
-             
-             request.httpMethod = "POST"// Compose a query string
-             
-             let postString = "firstName=James&lastName=Bond";
-             
-             request.httpBody = postString.data(using: String.Encoding.utf8);
-             
-             let task = URLSession.shared.dataTask(with: request) { (data: Data?, response: URLResponse?, error: Error?) in
-                 
-                 if error != nil
-                 {
-                     print("error=\(error)")
-                     return
-                 }
-                 
-                 // You can print out response object
-                 print("response = \(response)")
-        
-                 //Let's convert response sent from a server side script to a NSDictionary object:
-                 do {
-                     let json = try JSONSerialization.jsonObject(with: data!, options: .mutableContainers) as? NSDictionary
-                     
-                     if let parseJSON = json {
-                         
-                         // Now we can access value of First Name by its key
-                         let firstNameValue = parseJSON["firstName"] as? String
-                         print("firstNameValue: \(firstNameValue)")
-                     }
-                 } catch {
-                     print(error)
-                 }
-             }
-             task.resume()
-        
+            
         
         
         
@@ -81,23 +53,14 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     @IBAction func sendNotification(_ sender: Any) {
-        print("criss de notiff")
-        var content = UNMutableNotificationContent()
-        content.title = "Notification Tutorial"
-        content.subtitle = "from ioscreator.com"
-        content.body = " Notification triggered"
-        
-                    
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 10, repeats: false)
-        let request = UNNotificationRequest(identifier: "notification.id.01", content: content, trigger: trigger)
-        
-        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
         
     }
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        var update = Timer.scheduledTimer(timeInterval: 2.00, target: self, selector: #selector(updateTable), userInfo: nil, repeats: true)
+        
+        var updateListView = Timer.scheduledTimer(timeInterval: 2.00, target: self, selector: #selector(updateTable), userInfo: nil, repeats: true)
+        var updatePumps = Timer.scheduledTimer(timeInterval: 5.00, target: self, selector: #selector(updateFlow), userInfo: nil, repeats: true)
         
         setupTableView()
         
@@ -109,6 +72,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 print("No")
             }
         }
+        
+        
     }
     
     
@@ -117,7 +82,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         let cellView: UIView = {
             let view = UIView()
-            view.backgroundColor = UIColor.blue
+            view.backgroundColor = UIColor.black
             view.layer.cornerRadius = 10
             view.translatesAutoresizingMaskIntoConstraints = false
             return view
@@ -177,7 +142,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         view.addSubview(tableview)
         
         NSLayoutConstraint.activate([
-            tableview.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 200),
+            tableview.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 150),
             tableview.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
             tableview.rightAnchor.constraint(equalTo: self.view.rightAnchor),
             tableview.leftAnchor.constraint(equalTo: self.view.leftAnchor)
@@ -197,8 +162,33 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        
+        
+        
+        
+        
         let cell = tableview.dequeueReusableCell(withIdentifier: "cellId", for: indexPath) as! ThirtyDayCell
-        cell.pompeLabel.text = ViewController.pompes[indexPath.row].name
+        if ViewController.pompes[indexPath.row].flow > 0 {
+            
+            cell.pompeLabel.text = ViewController.pompes[indexPath.row].name + "  1  " + String(ViewController.pompes[indexPath.row].flow)
+            cell.pompeLabel.textColor = UIColor.systemGreen
+            
+        } else {
+            
+            cell.pompeLabel.text = ViewController.pompes[indexPath.row].name + "  0   " + String(ViewController.pompes[indexPath.row].flow)
+            cell.pompeLabel.textColor = UIColor.red
+            
+            var content = UNMutableNotificationContent()
+            content.title = "Alerte Pompe"
+            content.subtitle = "Problème"
+            content.body = "Vérifier votre pompe " + ViewController.pompes[indexPath.row].name
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 4, repeats: false)
+            let request = UNNotificationRequest(identifier: "notification.id.01", content: content, trigger: trigger)
+            UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+            
+        }
+        
         return cell
     }
     
@@ -216,5 +206,53 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     @objc func updateTable() {
         tableview.reloadData()
     }
+    
+    @objc func updateFlow() {
+        
+        for pompe in ViewController.pompes {
+            let urlComps = NSURLComponents(string: "http://18.222.169.179:3000/getFlow/"+pompe.code)!
+            let URL = urlComps.url!
+            var request = URLRequest(url:URL)
+            request.httpMethod = "GET"
+            
+            
+            
+             let task = URLSession.shared.dataTask(with: request) { (data: Data?, response: URLResponse?, error: Error?) in
+                 
+                 if error != nil
+                 {
+                     print("error=\(error)")
+                     return
+                 }
+                 
+                 // You can print out response object
+                 print("response = \(response)")
+                
+        
+                 //Let's convert response sent from a server side script to a NSDictionary object:
+                 do {
+                    if let json = try JSONSerialization.jsonObject(with: data!, options:[] ) as? [String: Any] {
+                        print(json)
+                        if let workingState = json["workingstate"] as? Bool {
+                            print(workingState)
+                            pompe.workingState = workingState
+                        }
+                        if let flow = json["flow"] as? Int {
+                            print(flow)
+                            pompe.flow = flow
+                        }
+                     }
+                 } catch {
+                     print(error)
+                 }
+             }
+             task.resume()
+            
+        }
+    }
+    
+    
+    
+    
 }
 

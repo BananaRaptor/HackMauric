@@ -13,8 +13,8 @@ import UIKit
     class QRController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
     var captureSession: AVCaptureSession!
     var previewLayer: AVCaptureVideoPreviewLayer!
-    
-    public static var qr = ""
+
+    public static var qr = "http://18.222.169.179:3000/addPump"
     
 
     override func viewDidLoad() {
@@ -113,7 +113,34 @@ import UIKit
                 print("Your name: \(name)")
                 pompe.name = name
                 pompe.code = code
+                print(code)
                 ViewController.pompes.insert(pompe, at: 0)
+
+                
+                
+                
+                
+                
+                let myUrl = URL(string: "http://18.222.169.179:3000/addpump");
+                var request = URLRequest(url:myUrl!)
+                request.httpMethod = "POST"// Compose a query string
+                let postString = "mac=" + pompe.code;
+                request.httpBody = postString.data(using: String.Encoding.utf8);
+                
+                     
+                     let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                         guard let data = data, error == nil else {
+                             print(error?.localizedDescription ?? "No data")
+                             return
+                         }
+                     }
+
+                     task.resume()
+                
+                
+                
+                
+                
             }
         }))
         self.present(alert, animated: true)

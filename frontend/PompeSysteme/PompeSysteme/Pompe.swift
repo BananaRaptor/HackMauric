@@ -10,6 +10,7 @@ import Foundation
 
 class Pompe: NSObject {
     var name: String = " "
-//  var image: UIImage = UIImage()
+    var flow : Int = 0
     var code: String = ""
+    var workingState : Bool = false
 }
