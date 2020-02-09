@@ -1,21 +1,29 @@
 const handleNewPump = (req, res, db) => {
-	const query = {
-		name: "insertNewPump",
-		text: `INSERT INTO pump ("pumpid","flow", "pumpname") 
-		VALUES ($1,-1.$2)`,
-		values: [
-			req.body.mac_address,
-			req.body.pump_name
-		]
-	};
-	
-	db.query(query, (err, data) => {
-		if(err) {
-			consosle.log(err.stack);
-		}
-	});
+	console.log(req.body);
+	saveNewPump(req.body.mac, -1, false, db);
 };
 
+function saveNewPump(mac, flow, running, db){
+	const query = {
+		name: "insertNewPump",
+		text: `INSERT INTO pump ("pumpid", "flow", "workingstate") VALUES ($1, $2, $3)`,
+		values: [
+			mac,
+			flow,
+			running
+		]
+	};
+	db.query(query, (err, data) => {
+		if(err) {
+			console.log(err.stack);
+		}else{
+			//console.log(data.rows[0]);
+		}
+	});
+}
+
 module.exports = {
-	handleNewPump
-};
+	saveNewPump: function(mac, flow, running, db) {saveNewPump(mac, flow, running, db)},
+	handelNewPump: function(req, res, db) {handleNewPump(req, res, db)}
+}
+
