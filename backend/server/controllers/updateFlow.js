@@ -18,9 +18,7 @@ function update(mac, flow, db){
     };
     db.query(query, (err, data) => {
         if(err) {
-            console.log(err.stack);
-        }else{
-            console.log(data.rows[0]);
+            console.log("error1: " + err.stack);
         }
     });
 }
